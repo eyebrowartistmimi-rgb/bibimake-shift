@@ -49,7 +49,7 @@
 .lg{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text-light)}.lg-d{width:10px;height:10px;border-radius:3px}
 .admin-only{display:none}.admin-only.show{display:block}
 .sc{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow-sm);overflow:hidden;margin-bottom:16px}
-.sc-h{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--navy);font-size:13px}
+.sc-h{padding:12px 16px;border-bottom:1px solid var(--border);font-weight:600;color:var(--navy);font-size:13px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
 .sc-b{padding:14px 16px}
 .loc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px}
 .loc-item{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;background:var(--bg)}
@@ -77,6 +77,10 @@ table.stbl td:first-child{text-align:left;padding-left:14px;font-weight:600}tabl
 .btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:var(--accent-light)}
 .btn-s{background:var(--bg);color:var(--text);border:1px solid var(--border)}
 .btn-d{background:var(--off-bg);color:var(--off-fg);border:none;padding:3px 8px;font-size:10px;border-radius:4px;cursor:pointer}
+.btn-export{background:linear-gradient(135deg,#4CAF50,#388E3C);color:#fff;padding:8px 18px;font-size:12px;font-weight:600;border:none;border-radius:8px;cursor:pointer;transition:.2s;display:inline-flex;align-items:center;gap:6px}.btn-export:hover{transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.export-box{background:#F1F8E9;border:1px solid #C5E1A5;border-radius:10px;padding:16px;margin-top:12px}
+.export-title{font-size:13px;font-weight:700;color:#33691E;margin-bottom:8px}.export-desc{font-size:11px;color:#558B2F;margin-bottom:12px;line-height:1.6}
+.save-indicator{position:fixed;bottom:20px;left:20px;background:var(--early-bg);color:var(--early-fg);padding:8px 14px;border-radius:20px;font-size:11px;font-weight:600;box-shadow:var(--shadow-sm);opacity:0;transition:opacity .4s;z-index:800}.save-indicator.show{opacity:1}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--navy);color:#fff;padding:11px 20px;border-radius:var(--radius-sm);font-size:12px;box-shadow:var(--shadow-lg);transform:translateY(100px);opacity:0;transition:.4s cubic-bezier(.22,1,.36,1);z-index:8000}.toast.show{transform:translateY(0);opacity:1}
 .data-badge{display:inline-block;font-size:9px;padding:2px 8px;border-radius:10px;font-weight:600;margin-left:6px}.data-badge.has{background:var(--early-bg);color:var(--early-fg)}.data-badge.no{background:var(--off-bg);color:var(--off-fg)}
 @media(max-width:768px){.main{padding:12px}.cal-c{min-height:70px;padding:3px}.tg{font-size:8.5px}.stats{grid-template-columns:repeat(2,1fr)}}
@@ -85,9 +89,7 @@ table.stbl td:first-child{text-align:left;padding-left:14px;font-weight:600}tabl
 <body>
 <div class="login-overlay hidden" id="loginOv"><div class="login-box"><div class="login-logo">B</div><div class="login-title">BIBIMAKE</div><div class="login-sub">管理者ログイン</div>
 <form onsubmit="return doLogin()"><input type="password" class="login-input" id="loginPw" placeholder="パスワード" autocomplete="off"><div class="login-error" id="loginErr"></div><button type="submit" class="login-btn">ログイン</button></form></div></div>
-
 <div class="modal-overlay hidden" id="editOv"><div class="modal" id="editModal"></div></div>
-
 <header class="header"><div class="header-inner">
 <div class="logo"><div class="logo-icon">B</div><div><div class="logo-text">BIBIMAKE</div><div class="logo-sub">Shift Calendar</div></div></div>
 <div class="nav">
@@ -95,40 +97,42 @@ table.stbl td:first-child{text-align:left;padding-left:14px;font-weight:600}tabl
 <div class="mode-toggle"><button class="mode-btn active" id="bS" onclick="setMode('staff')">📋 スタッフ</button><button class="mode-btn" id="bA" onclick="reqAdmin()">🔒 管理者<span class="a-badge" id="aB">✓</span></button></div>
 <button class="btn-logout" id="logoutBtn" onclick="doLogout()">ログアウト</button>
 </div></div></header>
-
 <main class="main">
 <div class="stats" id="stats"></div>
 <div class="cal-card"><div class="cal-h"><div>日</div><div>月</div><div>火</div><div>水</div><div>木</div><div>金</div><div>土</div></div><div class="cal-g" id="cG"></div>
 <div class="legend" id="leg"></div></div>
-
 <div class="admin-only" id="adminS">
-<div class="sc"><div class="sc-h">📥 CSVデータ読み込み <span class="data-badge" id="dataBadge"></span></div><div class="sc-b">
+<div class="sc"><div class="sc-h"><span>📥 CSVデータ読み込み</span> <span class="data-badge" id="dataBadge"></span></div><div class="sc-b">
 <div class="csv-zone" id="csvZone" onclick="document.getElementById('csvFile').click()">
-<div class="csv-zone-icon">📄</div>
-<div class="csv-zone-text">CSVファイルをドラッグ＆ドロップ or クリック</div>
-<div class="csv-zone-sub">Googleスプレッドシート → ファイル → ダウンロード → CSV</div>
-</div>
+<div class="csv-zone-icon">📄</div><div class="csv-zone-text">CSVをドラッグ＆ドロップ or クリック</div>
+<div class="csv-zone-sub">Googleスプレッドシート → ファイル → ダウンロード → CSV</div></div>
 <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCSV(this.files[0])">
-<div class="csv-status" id="csvSt"></div>
-</div></div>
+<div class="csv-status" id="csvSt"></div></div></div>
+
+<div class="sc"><div class="sc-h"><span>📤 GitHub Pages用エクスポート</span></div><div class="sc-b">
+<div class="export-box">
+<div class="export-title">🌐 スタッフ共有用HTMLをダウンロード</div>
+<div class="export-desc">現在のシフトデータ＋イベントをすべて埋め込んだHTMLを出力します。<br>GitHubのindex.htmlを差し替えれば、スタッフ全員のスマホに反映されます。</div>
+<button class="btn-export" onclick="exportHTML()">📥 index.htmlをダウンロード</button>
+</div></div></div>
 
 <div class="sc"><div class="sc-h">📍 教室別 月間出勤人数</div><div class="sc-b"><div class="loc-grid" id="locG"></div></div></div>
 <div class="sc"><div class="sc-h">👥 スタッフ別サマリー</div><div class="sc-b" style="padding:0;overflow-x:auto"><table class="stbl" id="sTbl"></table></div></div>
 <div class="sc"><div class="sc-h">🎌 イベント管理</div><div class="sc-b">
-<div class="ev-row"><input type="date" id="evD"><input type="text" id="evT" placeholder="イベント名（例：勉強会、スキルアップ研修）"><button class="btn btn-p" onclick="addEv()">＋追加</button></div>
+<div class="ev-row"><input type="date" id="evD"><input type="text" id="evT" placeholder="イベント名"><button class="btn btn-p" onclick="addEv()">＋追加</button></div>
 <div id="evList"></div></div></div>
 </div></main>
+<div class="save-indicator" id="saveInd">💾 自動保存しました</div>
 <div class="toast" id="toast"></div>
-
 <script>
 const ST=["ちか","みく","えり","じゅんこ","みみ","ゆかり","けいこ","さき","あいか","あやか"];
 const SC=["#E91E63","#9C27B0","#2196F3","#FF9800","#4CAF50","#00BCD4","#795548","#F44336","#3F51B5","#8BC34A"];
 const LOCS=["東京本部","新宿","横浜","大阪","福岡"];const LC=["#4A90D9","#7B68EE","#20B2AA","#FF7F50","#DA70D6"];
-const DW=["日","月","火","水","木","金","土"];const PW="bibi";
+const DW=["日","月","火","水","木","金","土"];const PW="bibi";const LS_KEY="bibimake_shift";
 let cY=2026,cM=3,isA=false,mode="staff",allData={},events={};
 
-// Pre-load March
-allData["2026-03"]={
+// === DEFAULT DATA ===
+const DEFAULT_DATA={"2026-03":{
 "ちか":["","","新宿","","","","","","","早","","","","","","","新宿","","","","","","","早","新宿","","新宿","","","","新宿"],
 "みく":["遅","","早","横浜","","","遅","遅","","横浜","横浜","遅","","","遅","早","早","","","","","","","遅","横浜","遅","横浜","","","","横浜"],
 "えり":["","横浜","遅","勉強会","","","","","早","遅","早","","","","","横浜","遅","","","","","","横浜","新宿","早","","新宿","","","遅","遅"],
@@ -139,80 +143,128 @@ allData["2026-03"]={
 "さき":["","","","遅","","","東京本部","早","東京本部","","","","","","","","","","","勉強会","","","","","","","","","","",""],
 "あいか":["早","","","","","","","","","","","","","","","","","","","","","","","","","","","","","",""],
 "あやか":["","","","早","","","早","","","","","早","","","早","","","","","勉強会","","","","","","","","","","",""]
-};
+}};
+
+// === LOCALSTORAGE ===
+function saveData(){
+  try{localStorage.setItem(LS_KEY,JSON.stringify({allData,events,cY,cM}));showSaveInd()}catch(e){}
+}
+function loadData(){
+  try{
+    const s=localStorage.getItem(LS_KEY);
+    if(s){const d=JSON.parse(s);allData=d.allData||{};events=d.events||{};cY=d.cY||2026;cM=d.cM||3;return true}
+  }catch(e){}
+  return false;
+}
+function showSaveInd(){const el=document.getElementById("saveInd");el.classList.add("show");setTimeout(()=>el.classList.remove("show"),1500)}
+
+// === INIT ===
+if(!loadData()){allData=JSON.parse(JSON.stringify(DEFAULT_DATA));saveData()}
 
 function gV(n,d){const k=`${cY}-${String(cM).padStart(2,"0")}`;return allData[k]?.[n]?.[d-1]||""}
-function sV(n,d,v){const k=`${cY}-${String(cM).padStart(2,"0")}`;if(!allData[k])allData[k]={};if(!allData[k][n])allData[k][n]=Array(new Date(cY,cM,0).getDate()).fill("");allData[k][n][d-1]=v}
+function sV(n,d,v){const k=`${cY}-${String(cM).padStart(2,"0")}`;if(!allData[k])allData[k]={};if(!allData[k][n])allData[k][n]=Array(new Date(cY,cM,0).getDate()).fill("");allData[k][n][d-1]=v;saveData()}
 function classify(v){if(!v)return null;if(v==="早")return{t:"e",l:"早番"};if(v==="遅")return{t:"l",l:"遅番"};if(v==="休")return{t:"o",l:"休"};if(v==="勉強会")return{t:"s",l:"勉強会"};if(v.startsWith("早"))return{t:"e",l:"早番",loc:v.slice(1)};if(v.startsWith("遅"))return{t:"l",l:"遅番",loc:v.slice(1)};if(LOCS.includes(v))return{t:"loc",l:v,loc:v};return{t:"loc",l:v,loc:v}}
 function getEv(d){return events[`${cY}-${String(cM).padStart(2,"0")}-${String(d).padStart(2,"0")}`]||[]}
 function hasMonthData(){return!!allData[`${cY}-${String(cM).padStart(2,"0")}`]}
 
-// Auth
+// === AUTH ===
 function reqAdmin(){if(isA){setMode("admin");return}document.getElementById("loginOv").classList.remove("hidden");document.getElementById("loginPw").value="";document.getElementById("loginErr").textContent="";setTimeout(()=>document.getElementById("loginPw").focus(),100)}
 function doLogin(){if(document.getElementById("loginPw").value===PW){isA=true;document.getElementById("loginOv").classList.add("hidden");document.getElementById("aB").style.display="inline";document.getElementById("logoutBtn").style.display="inline-block";setMode("admin");toast("✅ 管理者ログイン完了")}else{document.getElementById("loginPw").classList.add("shake");document.getElementById("loginErr").textContent="パスワードが違います";setTimeout(()=>document.getElementById("loginPw").classList.remove("shake"),400)}return false}
 function doLogout(){isA=false;document.getElementById("aB").style.display="none";document.getElementById("logoutBtn").style.display="none";setMode("staff");toast("🔒 ログアウトしました")}
 document.addEventListener("keydown",e=>{if(e.key==="Escape"){document.getElementById("loginOv").classList.add("hidden");document.getElementById("editOv").classList.add("hidden")}});
 ["loginOv","editOv"].forEach(id=>document.getElementById(id).addEventListener("click",e=>{if(e.target===e.currentTarget)e.currentTarget.classList.add("hidden")}));
-
 function setMode(m){if(m==="admin"&&!isA){reqAdmin();return}mode=m;document.getElementById("bS").classList.toggle("active",m==="staff");document.getElementById("bA").classList.toggle("active",m==="admin");document.getElementById("adminS").classList.toggle("show",m==="admin");render()}
-function chgM(d){cM+=d;if(cM>12){cM=1;cY++}if(cM<1){cM=12;cY--}render()}
+function chgM(d){cM+=d;if(cM>12){cM=1;cY++}if(cM<1){cM=12;cY--}saveData();render()}
 
-// CSV
+// === CSV ===
 const cz=document.getElementById("csvZone");
 cz.addEventListener("dragover",e=>{e.preventDefault();cz.classList.add("drag")});
 cz.addEventListener("dragleave",()=>cz.classList.remove("drag"));
 cz.addEventListener("drop",e=>{e.preventDefault();cz.classList.remove("drag");if(e.dataTransfer.files.length)handleCSV(e.dataTransfer.files[0])});
-
 function parseCSVLine(line){const r=[];let c="",q=false;for(let i=0;i<line.length;i++){const ch=line[i];if(ch==='"')q=!q;else if(ch===","&&!q){r.push(c);c=""}else c+=ch}r.push(c);return r}
-
 function handleCSV(file){
   if(!file)return;const reader=new FileReader();
   reader.onload=function(e){
     try{
-      const lines=e.target.result.split(/\r?\n/);
-      let hi=-1;for(let i=0;i<Math.min(lines.length,5);i++){if(lines[i].includes("スタッフ")){hi=i;break}}
+      const lines=e.target.result.split(/\r?\n/);let hi=-1;
+      for(let i=0;i<Math.min(lines.length,5);i++){if(lines[i].includes("スタッフ")){hi=i;break}}
       if(hi===-1){csvSt("err","❌ ヘッダー行が見つかりません");return}
       let dY=cY,dM=cM;const ym=(lines[0]||"").match(/(\d{4})年(\d{1,2})月/);
       if(ym){dY=parseInt(ym[1]);dM=parseInt(ym[2])}
       const k=`${dY}-${String(dM).padStart(2,"0")}`;const dim=new Date(dY,dM,0).getDate();
-      if(!allData[k])allData[k]={};
-      let imp=0;
+      if(!allData[k])allData[k]={};let imp=0;
       for(let i=hi+1;i<lines.length;i++){
-        const cols=parseCSVLine(lines[i]);if(cols.length<3)continue;
-        const nm=cols[0].trim();if(!ST.includes(nm))continue;
-        if(nm==="合計"||nm.includes("人数")||nm.includes("📍"))break;
+        const cols=parseCSVLine(lines[i]);if(cols.length<3)continue;const nm=cols[0].trim();
+        if(!ST.includes(nm))continue;if(nm==="合計"||nm.includes("人数")||nm.includes("📍"))break;
         const sh=[];for(let d=0;d<dim;d++)sh.push((cols[d+2]||"").replace(/\n/g,"").trim());
         allData[k][nm]=sh;imp++;
       }
-      if(imp>0){cY=dY;cM=dM;csvSt("ok",`✅ ${dY}年${dM}月を読み込みました（${imp}名）`);render();toast(`📥 ${dM}月のシフトを更新しました`)}
-      else csvSt("err","❌ スタッフデータが見つかりません");
-    }catch(err){csvSt("err","❌ 読み込み失敗: "+err.message)}
+      if(imp>0){cY=dY;cM=dM;saveData();csvSt("ok",`✅ ${dY}年${dM}月（${imp}名）`);render();toast(`📥 ${dM}月更新＆保存完了`)}
+      else csvSt("err","❌ スタッフデータなし");
+    }catch(err){csvSt("err","❌ "+err.message)}
   };reader.readAsText(file,"UTF-8");
 }
 function csvSt(t,m){const el=document.getElementById("csvSt");el.className="csv-status "+t;el.textContent=m}
 
-// Edit
+// === EDIT ===
 function openEdit(day){
   if(!isA)return;const m=document.getElementById("editModal");const dow=new Date(cY,cM-1,day).getDay();
   const opts=["","早","遅","休","勉強会","早東京本部","早新宿","早横浜","早大阪","早福岡","遅東京本部","遅新宿","遅横浜","遅大阪","遅福岡","東京本部","新宿","横浜","大阪","福岡"];
   const labels={"":"─","早":"早番","遅":"遅番","休":"休み","勉強会":"勉強会","早東京本部":"早番@東京本部","早新宿":"早番@新宿","早横浜":"早番@横浜","早大阪":"早番@大阪","早福岡":"早番@福岡","遅東京本部":"遅番@東京本部","遅新宿":"遅番@新宿","遅横浜":"遅番@横浜","遅大阪":"遅番@大阪","遅福岡":"遅番@福岡","東京本部":"東京本部","新宿":"新宿","横浜":"横浜","大阪":"大阪","福岡":"福岡"};
-  let h=`<div class="modal-title">✏️ ${cM}月${day}日（${DW[dow]}）シフト編集</div>`;
-  ST.forEach((nm,i)=>{
-    const v=gV(nm,day);
+  let h=`<div class="modal-title">✏️ ${cM}月${day}日（${DW[dow]}）</div>`;
+  ST.forEach((nm,i)=>{const v=gV(nm,day);
     h+=`<div class="modal-row"><div class="modal-label"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:${SC[i]};margin-right:4px;vertical-align:middle"></span>${nm}</div><select class="modal-select" id="ed${i}" onchange="onEd(${i},${day})">`;
-    opts.forEach(o=>{h+=`<option value="${o}"${v===o?" selected":""}>${labels[o]||o}</option>`});
-    h+=`</select></div>`;
+    opts.forEach(o=>{h+=`<option value="${o}"${v===o?" selected":""}>${labels[o]||o}</option>`});h+=`</select></div>`;
   });
   h+=`<div class="modal-btns"><button class="btn btn-s" onclick="document.getElementById('editOv').classList.add('hidden')">閉じる</button></div>`;
   m.innerHTML=h;document.getElementById("editOv").classList.remove("hidden");
 }
 function onEd(si,day){sV(ST[si],day,document.getElementById("ed"+si).value);render()}
 
-// Events
-function addEv(){const d=document.getElementById("evD").value,t=document.getElementById("evT").value.trim();if(!d||!t){toast("⚠️ 日付とイベント名を入力");return}if(!events[d])events[d]=[];events[d].push(t);document.getElementById("evT").value="";toast("🎌 イベント追加");render()}
-function rmEv(dk,i){events[dk].splice(i,1);if(!events[dk].length)delete events[dk];render()}
+// === EVENTS ===
+function addEv(){const d=document.getElementById("evD").value,t=document.getElementById("evT").value.trim();if(!d||!t){toast("⚠️ 日付とイベント名を入力");return}if(!events[d])events[d]=[];events[d].push(t);document.getElementById("evT").value="";saveData();toast("🎌 イベント追加＆保存");render()}
+function rmEv(dk,i){events[dk].splice(i,1);if(!events[dk].length)delete events[dk];saveData();render()}
 
-// Render
+// === EXPORT HTML ===
+function exportHTML(){
+  // Get the current page HTML and inject allData + events as embedded data
+  const dataScript=`
+// === EMBEDDED DATA (exported ${new Date().toLocaleString("ja-JP")}) ===
+const EMBEDDED_DATA=${JSON.stringify(allData)};
+const EMBEDDED_EVENTS=${JSON.stringify(events)};
+`;
+  // Get the page source
+  let src=document.documentElement.outerHTML;
+  // Replace the default data loading section
+  const marker="// === INIT ===";
+  const replacement=`// === INIT ===
+// Embedded data from export
+allData=JSON.parse('${JSON.stringify(allData).replace(/'/g,"\\'")}');
+events=JSON.parse('${JSON.stringify(events).replace(/'/g,"\\'")}');
+// Still try localStorage for admin edits on same machine
+const lsLoaded=loadData();
+if(!lsLoaded){saveData();}`;
+
+  // Simple approach: rebuild a clean HTML with embedded data
+  const blob=new Blob([buildExportHTML()],{type:"text/html;charset=utf-8"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="index.html";a.click();
+  toast("📥 index.htmlをダウンロードしました");
+}
+
+function buildExportHTML(){
+  const dataJSON=JSON.stringify(allData);
+  const eventsJSON=JSON.stringify(events);
+  // Get current document HTML but swap the init section
+  let html=document.documentElement.outerHTML;
+  // Replace the DEFAULT_DATA and init block
+  html=html.replace(
+    /const DEFAULT_DATA=\{[\s\S]*?\}\};/,
+    `const DEFAULT_DATA=${dataJSON};`
+  );
+  return "<!DOCTYPE html>\n<html lang=\"ja\">\n"+html.substring(html.indexOf("<head>"));
+}
+
+// === RENDER ===
 function render(){
   document.getElementById("mL").textContent=`${cY}年 ${cM}月`;
   const dim=new Date(cY,cM,0).getDate(),fd=new Date(cY,cM-1,1).getDay(),td=new Date(),k=`${cY}-${String(cM).padStart(2,"0")}`;
@@ -229,17 +281,13 @@ function render(){
       else if(info.t==="s"){ss[nm].st++}});
     if(dc>0)wd++;tW+=dc;days.push({d,dow,isT,ent,dc,evts});
   }
-
   document.getElementById("stats").innerHTML=mode==="admin"?
     `<div class="stat"><div class="stat-v">${wd}</div><div class="stat-l">稼働日</div></div><div class="stat"><div class="stat-v">${ST.length}</div><div class="stat-l">スタッフ</div></div><div class="stat"><div class="stat-v">${tE}</div><div class="stat-l">早番</div></div><div class="stat"><div class="stat-v">${tL}</div><div class="stat-l">遅番</div></div><div class="stat"><div class="stat-v">${tW}</div><div class="stat-l">総出勤</div></div>`:
     `<div class="stat"><div class="stat-v">${wd}</div><div class="stat-l">稼働日</div></div><div class="stat"><div class="stat-v">${tE}</div><div class="stat-l">早番</div></div><div class="stat"><div class="stat-v">${tL}</div><div class="stat-l">遅番</div></div>`;
-
   let h="";for(let i=0;i<fd;i++)h+=`<div class="cal-c empty"></div>`;
   days.forEach(({d,dow,isT,ent,dc,evts})=>{
-    let cls="cal-c";if(dow===0)cls+=" sun";if(dow===6)cls+=" sat";if(isT)cls+=" today";
-    if(isA)cls+=" editable";
-    const click=isA?` onclick="openEdit(${d})"`:"";
-    let tags="";
+    let cls="cal-c";if(dow===0)cls+=" sun";if(dow===6)cls+=" sat";if(isT)cls+=" today";if(isA)cls+=" editable";
+    const click=isA?` onclick="openEdit(${d})"`:"";let tags="";
     evts.forEach(ev=>{tags+=`<div class="tg tg-ev">🎌 ${ev}</div>`});
     if(mode==="staff"){
       const en=[],ln=[];ent.forEach(({nm,info})=>{if(info.t==="e")en.push(nm);if(info.t==="l")ln.push(nm)});
@@ -252,18 +300,14 @@ function render(){
         else if(info.t==="o"){c="tg-o";t=`${nm} 休`}
         else if(info.t==="s"){c="tg-st";t=`📖${nm}`}
         else if(info.t==="loc"){c="tg-loc";t=`📍${nm}@${info.loc}`}
-        tags+=`<div class="tg ${c}">${t}</div>`;
-      });
+        tags+=`<div class="tg ${c}">${t}</div>`;});
     }
-    const nb=dc>0?`<span class="cd-n">${dc}</span>`:"";
-    h+=`<div class="${cls}"${click}><div class="cd"><span>${d}</span>${nb}</div>${tags}</div>`;
+    h+=`<div class="${cls}"${click}><div class="cd"><span>${d}</span>${dc>0?`<span class="cd-n">${dc}</span>`:""}</div>${tags}</div>`;
   });
   document.getElementById("cG").innerHTML=h;
-
   document.getElementById("leg").innerHTML=mode==="staff"?
     `<div class="lg"><div class="lg-d" style="background:var(--early-bg);border:1px solid #81C784"></div>早番 9-15時</div><div class="lg"><div class="lg-d" style="background:var(--late-bg);border:1px solid #FFB74D"></div>遅番 12-18時</div><div class="lg"><div class="lg-d" style="background:var(--event-bg);border:1px solid #4DB6AC"></div>イベント</div>`:
-    `<div class="lg"><div class="lg-d" style="background:var(--early-bg);border:1px solid #81C784"></div>早番</div><div class="lg"><div class="lg-d" style="background:var(--late-bg);border:1px solid #FFB74D"></div>遅番</div><div class="lg"><div class="lg-d" style="background:var(--loc-bg);border:1px solid #64B5F6"></div>教室</div><div class="lg"><div class="lg-d" style="background:var(--study-bg);border:1px solid #BA68C8"></div>勉強会</div><div class="lg"><div class="lg-d" style="background:var(--off-bg);border:1px solid #EF9A9A"></div>休み</div><div class="lg"><div class="lg-d" style="background:var(--event-bg);border:1px solid #4DB6AC"></div>イベント</div><div class="lg" style="margin-left:auto;font-weight:600;color:var(--accent)">📝 日付クリックで編集</div>`;
-
+    `<div class="lg"><div class="lg-d" style="background:var(--early-bg);border:1px solid #81C784"></div>早番</div><div class="lg"><div class="lg-d" style="background:var(--late-bg);border:1px solid #FFB74D"></div>遅番</div><div class="lg"><div class="lg-d" style="background:var(--loc-bg);border:1px solid #64B5F6"></div>教室</div><div class="lg"><div class="lg-d" style="background:var(--study-bg);border:1px solid #BA68C8"></div>勉強会</div><div class="lg"><div class="lg-d" style="background:var(--off-bg);border:1px solid #EF9A9A"></div>休み</div><div class="lg"><div class="lg-d" style="background:var(--event-bg);border:1px solid #4DB6AC"></div>イベント</div><div class="lg" style="margin-left:auto;font-weight:600;color:var(--accent)">📝 日付クリック→編集</div>`;
   if(mode==="admin"){
     const db=document.getElementById("dataBadge");db.className="data-badge "+(hasMonthData()?"has":"no");db.textContent=hasMonthData()?"データあり":"データなし";
     let lh="";LOCS.forEach((l,i)=>{lh+=`<div class="loc-item"><div class="loc-dot" style="background:${LC[i]}"></div><div class="loc-name">${l}</div><div class="loc-count">${locC[l]||0}</div></div>`});
@@ -277,7 +321,6 @@ function render(){
     document.getElementById("evD").value=`${cY}-${String(cM).padStart(2,"0")}-01`;
   }
 }
-
 function toast(m){const t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),3000)}
 render();
 </script>
